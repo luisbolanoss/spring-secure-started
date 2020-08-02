@@ -76,6 +76,7 @@
     <module>ldap-secure</module>
     <module>login-secure</module>
     <module>authentication-provider</module>
+    <module>custom-user-details</module>
   </modules>
   
 </project>

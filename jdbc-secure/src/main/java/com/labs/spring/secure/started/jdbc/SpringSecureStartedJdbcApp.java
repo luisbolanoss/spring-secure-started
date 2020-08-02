@@ -52,7 +52,7 @@ public class SpringSecureStartedJdbcApp {
 
 @RestController
 class GreetingRestController {
-	@GetMapping("/greeting")
+	public @GetMapping("/greeting")
 	String greeting(Principal principal) {
 		return "hello, " + principal.getName();
 	}
@@ -60,7 +60,8 @@ class GreetingRestController {
 
 @Configuration
 @EnableWebSecurity
-class SecurityConfiguration extends WebSecurityConfigurerAdapter {
+class JdbcSecurityConfiguration extends WebSecurityConfigurerAdapter {
+	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		http.httpBasic();
 

@@ -1,4 +1,4 @@
-package com.labs.springsecurestarted.jdbc;
+package com.labs.spring.secure.started.jdbc;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.SpringApplication;
@@ -19,7 +19,7 @@ import javax.sql.DataSource;
 import java.security.Principal;
 
 @SpringBootApplication
-public class JdbcApplication {
+public class SpringSecureStartedJdbcApp {
 	@Bean
 	UserDetailsManager userDetailsManager(DataSource dataSource) {
 		JdbcUserDetailsManager jdbcUserDetailsManager = new JdbcUserDetailsManager();
@@ -46,7 +46,7 @@ public class JdbcApplication {
 	}
 
 	public static void main(String[] args) {
-		SpringApplication.run(JdbcApplication.class, args);
+		SpringApplication.run(SpringSecureStartedJdbcApp.class, args);
 	}
 }
 

@@ -74,6 +74,7 @@
   <modules>
     <module>jdbc-secure</module>
     <module>ldap-secure</module>
+    <module>login-secure</module>
   </modules>
   
 </project>

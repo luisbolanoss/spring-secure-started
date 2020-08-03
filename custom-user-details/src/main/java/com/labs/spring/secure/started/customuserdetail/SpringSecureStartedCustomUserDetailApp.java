@@ -11,8 +11,12 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsPasswordService;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.DelegatingPasswordEncoder;
+import org.springframework.security.crypto.password.MessageDigestPasswordEncoder;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -33,20 +37,25 @@ import java.util.stream.Stream;
 public class SpringSecureStartedCustomUserDetailApp {
 	@Bean
 	PasswordEncoder passwordEncoder() {
-		return NoOpPasswordEncoder.getInstance();
+		return PasswordEncoderFactories.createDelegatingPasswordEncoder();
 	}
 
-	@Bean CustomUserDetailsService customUserDetailsService() {
+	@Bean
+	PasswordEncoder oldPasswordEncode() {
+		String md5 = "MD5";
+		return new DelegatingPasswordEncoder(md5, Collections.singletonMap(md5, new MessageDigestPasswordEncoder(md5)));
+	}
+
+	@Bean
+	CustomUserDetailsService customUserDetailsService() {
 		Collection<UserDetails> users = Arrays.asList(
-			new CustomUserDetails("ben", "benspassword", true, "USER")
+			new CustomUserDetails("ben", oldPasswordEncode().encode("benspassword"), true, "USER")
 		);
 		return new CustomUserDetailsService(users);
 	}
 
-	public static void main(String[] args) {
-		SpringApplication.run(SpringSecureStartedCustomUserDetailApp.class, args);
+	public static void main(String[] args) { SpringApplication.run(SpringSecureStartedCustomUserDetailApp.class, args);
 	}
-
 }
 
 @RestController
@@ -68,11 +77,13 @@ class CustomUserDetailsSecurityConfiguration extends WebSecurityConfigurerAdapte
 	}
 }
 
-class CustomUserDetailsService implements UserDetailsService {
+class CustomUserDetailsService implements UserDetailsService, UserDetailsPasswordService {
 	private final Map<String, UserDetails> users = new ConcurrentHashMap<>();
 
 	public CustomUserDetailsService(Collection<UserDetails> seedUsers) {
-		seedUsers.forEach(user -> this.users.put(user.getUsername(), user));
+		seedUsers.forEach(user -> {
+			this.users.put(user.getUsername(), user);
+		});
 	}
 
 
@@ -83,6 +94,19 @@ class CustomUserDetailsService implements UserDetailsService {
 		}
 
 		throw new UsernameNotFoundException("no found username");
+	}
+
+	@Override
+	public UserDetails updatePassword(UserDetails user, String newPassword) {
+		System.out.println("====>" + newPassword);
+		this.users.put(user.getUsername(), new CustomUserDetails(
+			user.getUsername(),
+			newPassword,
+			user.isEnabled(),
+			user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toArray(String[]::new)
+		));
+
+		return this.loadUserByUsername(user.getUsername());
 	}
 }
 
@@ -133,4 +157,13 @@ class CustomUserDetails implements UserDetails {
 	public boolean isEnabled() {
 		return active;
 	}
+
+	public boolean isActive() {
+		return active;
+	}
+
+	public void setActive(boolean active) {
+		this.active = active;
+	}
+
 }

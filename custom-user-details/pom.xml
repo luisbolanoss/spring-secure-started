@@ -13,7 +13,10 @@
 	<description>Custom user details</description>
 
 	<dependencies>
-
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-actuator</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>
